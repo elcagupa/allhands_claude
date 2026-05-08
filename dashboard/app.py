@@ -320,10 +320,10 @@ c4.metric("Unique Passengers",  f"{int(cur.passengers):,}",
 st.divider()
 
 # ── Row 2: Q1 Revenue trend | Q2 On-time by route ────────────────────────────
-st.markdown(f"#### Q1 · Ticket Revenue YoY &nbsp;&nbsp; Q2 · On-Time % by Route")
 col_l, col_r = st.columns(2)
 
 with col_l:
+    st.subheader("Q1 · Monthly Ticket Revenue")
     df_rev = get_monthly_revenue(year_sel, quarter_sel)
     fig_rev = px.line(
         df_rev, x="month", y="revenue", color="year", markers=True,
@@ -338,6 +338,7 @@ with col_l:
     st.plotly_chart(fig_rev, use_container_width=True)
 
 with col_r:
+    st.subheader("Q2 · On-Time % by Route")
     df_ot = get_ontime_by_route(year_sel, quarter_sel)
     fig_ot = go.Figure(go.Bar(
         x=df_ot["pct_on_time"], y=df_ot["route_name"], orientation="h",
@@ -367,10 +368,10 @@ with col_r:
 st.divider()
 
 # ── Row 3: Q3 Avg price by channel | Q4 Weather vs delays ────────────────────
-st.markdown("#### Q3 · Avg Ticket Price by Channel &nbsp;&nbsp; Q4 · Weather vs Delays by Route")
 col_l, col_r = st.columns(2)
 
 with col_l:
+    st.subheader("Q3 · Avg Ticket Price by Channel")
     df_ch = get_avg_price_channel(year_sel, quarter_sel)
     fig_ch = px.bar(
         df_ch, x="channel", y="avg_price", text="avg_price",
@@ -386,6 +387,7 @@ with col_l:
     st.plotly_chart(fig_ch, use_container_width=True)
 
 with col_r:
+    st.subheader("Q4 · Weather vs Delays by Route")
     df_wd = get_weather_delays(year_sel, quarter_sel)
     if df_wd.empty:
         st.info("No journey data for this period.")
@@ -409,10 +411,10 @@ with col_r:
 st.divider()
 
 # ── Row 4: Q5 Busiest day | Q6 Top onboard SKU ───────────────────────────────
-st.markdown("#### Q5 · Busiest Day of Week &nbsp;&nbsp; Q6 · Top Onboard SKU by Revenue")
 col_l, col_r = st.columns(2)
 
 with col_l:
+    st.subheader("Q5 · Busiest Day of Week")
     df_dow = get_busiest_dow(year_sel, quarter_sel)
     DOW_ORDER = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
     fig_dow = px.bar(
@@ -428,6 +430,7 @@ with col_l:
     st.plotly_chart(fig_dow, use_container_width=True)
 
 with col_r:
+    st.subheader("Q6 · Top Onboard SKU by Revenue")
     df_sku = get_top_skus(year_sel, quarter_sel)
     if df_sku.empty:
         st.info("No onboard sales data for this period.")
@@ -448,15 +451,16 @@ with col_r:
 st.divider()
 
 # ── Row 5: Q7 Loyalty spend | Q9 Punctuality trend ───────────────────────────
-st.markdown("#### Q7 · Loyalty Tier Avg Annual Spend &nbsp;&nbsp; Q9 · Punctuality Trend 2024→2025")
 col_l, col_r = st.columns(2)
 
 with col_l:
+    st.subheader("Q7 · Loyalty Tier Avg Annual Spend")
     df_loy = get_loyalty_spend(year_sel, quarter_sel)
     if not df_loy.empty:
         top_tier = df_loy.iloc[0]["loyalty_tier"]
         bot_tier = df_loy.iloc[-1]["loyalty_tier"]
         gap      = df_loy.iloc[0]["avg_spend"] - df_loy.iloc[-1]["avg_spend"]
+        st.caption(f"**{top_tier}** leads **{bot_tier}** by CHF {gap:,.0f}/yr — consider upsell campaigns")
         fig_loy = px.bar(
             df_loy, x="loyalty_tier", y="avg_spend", text="avg_spend",
             color="loyalty_tier",
@@ -466,33 +470,29 @@ with col_l:
         fig_loy.update_traces(texttemplate="CHF %{text:,.2f}", textposition="outside")
         fig_loy.update_layout(
             plot_bgcolor="white", paper_bgcolor="white", showlegend=False,
-            margin=dict(t=40, b=10),
+            margin=dict(t=10, b=10),
             yaxis=dict(range=[0, df_loy["avg_spend"].max() * 1.2]),
-            annotations=[dict(
-                x=0.5, y=1.1, xref="paper", yref="paper",
-                text=f"<b>{top_tier}</b> leads <b>{bot_tier}</b> by CHF {gap:,.0f}/yr",
-                showarrow=False, font=dict(color=NAVY, size=12),
-            )],
         )
         st.plotly_chart(fig_loy, use_container_width=True)
 
 with col_r:
+    st.subheader("Q9 · Punctuality Trend 2024→2025")
     df_pt = get_punctuality_trend(year_sel, quarter_sel)
     avg_24 = df_pt[df_pt.yr == 2024]["pct_on_time"].mean()
     avg_25 = df_pt[df_pt.yr == 2025]["pct_on_time"].mean()
     delta_pp = avg_25 - avg_24
     direction = "improved" if delta_pp > 0 else "worsened"
+    st.caption(f"Punctuality **{direction}** by {abs(delta_pp):.1f} pp in 2025 vs 2024")
     fig_pt = px.line(
         df_pt, x="month", y="pct_on_time", color="year",
         markers=True,
         color_discrete_map={"2024": NAVY, "2025": RED},
         labels={"pct_on_time": "On-Time % (≤3 min)", "month": "Month", "year": "Year"},
         category_orders={"month": list(MONTH_NAMES.values())},
-        title=f"Punctuality {direction} by {abs(delta_pp):.1f} pp in 2025 vs 2024",
     )
     fig_pt.update_layout(
         plot_bgcolor="white", paper_bgcolor="white",
-        legend_title_text="", margin=dict(t=40, b=10),
+        legend_title_text="", margin=dict(t=10, b=10),
         yaxis=dict(range=[85, 100]),
     )
     fig_pt.update_traces(line_width=2.5)
@@ -501,10 +501,10 @@ with col_r:
 st.divider()
 
 # ── Row 6: Q8 Route volume | Partner bookings trend ──────────────────────────
-st.markdown("#### Q8 · Tickets Sold by Route &nbsp;&nbsp; Partner Bookings by Type")
 col_l, col_r = st.columns(2)
 
 with col_l:
+    st.subheader("Q8 · Tickets Sold by Route")
     st.caption("No origin_station in source data — route volume used as proxy for boardings")
     df_rv = get_route_volume(year_sel, quarter_sel)
     fig_rv = px.bar(
@@ -521,6 +521,7 @@ with col_l:
     st.plotly_chart(fig_rv, use_container_width=True)
 
 with col_r:
+    st.subheader("Partner Bookings by Type")
     df_pb = query(f"""
         SELECT YEAR(CAST(booking_timestamp AS TIMESTAMP))  AS yr,
                MONTH(CAST(booking_timestamp AS TIMESTAMP)) AS mo,
@@ -553,7 +554,7 @@ with col_r:
 st.divider()
 
 # ── Row 7: Q10 Stockout revenue loss (full width) ─────────────────────────────
-st.markdown("#### Q10 · Surprise Insight — Onboard Stockout Revenue Loss")
+st.subheader("Q10 · Surprise Insight — Onboard Stockout Revenue Loss")
 df_sl = get_stockout_loss(year_sel, quarter_sel)
 
 if df_sl.empty:
